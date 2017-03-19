@@ -6,20 +6,20 @@ import org.apache.spark.streaming.dstream.DStream
   * Created by suneelbelkhale1 on 3/14/17.
   */
 abstract class Node[A, B] {
-  private var out: Option[DStream[B]] = None
-  private var prevNode: Option[Node[Any, A]] = None
+  protected var out: Option[DStream[B]] = None
+  protected var prevNode: Option[Node[Any, A]] = None
+
+  def apply(in: A) : B
+  def apply(inStream: DStream[A]) : DStream[B] = inStream.map(apply)
 
   private[core] def connect(in: Node[Any, A]): Node[A,B] = {
       this.out = in.out match {
         case Some(stream) => Some(apply(stream))
         case None => throw new UnsupportedOperationException("Must connect to connected node")
       }
-      this.prevNode = Some(in.asInstanceOf[Node[Any, A]])
+      this.prevNode = Some(in)
       this
   }
-
-  def apply(in: A) : B
-  def apply(inStream: DStream[A]) : DStream[B] = inStream.map(apply)
 }
 
 object Node {
