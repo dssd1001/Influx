@@ -3,23 +3,13 @@ package com.mlab.influx.core
 import org.apache.spark.streaming.dstream.DStream
 
 /**
-  * Created by suneelbelkhale1 on 3/14/17.
+  * A single processing node.
+  * Processes an element of a stream using some function.
   */
 abstract class Node[A, B] {
-  protected var out: Option[DStream[B]] = None
-  protected var prevNode: Option[Node[Any, A]] = None
 
   def apply(in: A) : B
   def apply(inStream: DStream[A]) : DStream[B] = inStream.map(apply)
-
-  private[core] def connect(in: Node[Any, A]): Node[A,B] = {
-      this.out = in.out match {
-        case Some(stream) => Some(apply(stream))
-        case None => throw new UnsupportedOperationException("Must connect to connected node")
-      }
-      this.prevNode = Some(in)
-      this
-  }
 }
 
 object Node {
@@ -35,4 +25,9 @@ object Node {
     override def apply(in: DStream[A]): DStream[B] = in.map(f)
     override def apply(in: A): B = f(in)
   }
+}
+
+class StreamNode[A](stream: DStream[A]) extends Node[A, A] {
+  def apply(in: A): A = in
+  override def apply(inStream: DStream[A]) : DStream[A] = stream
 }
