@@ -16,9 +16,13 @@ class Component extends Graph {
   private val defaultOutput = Some(output)
 
   def hook(from: Node[Any, Any], to: Node[Any, Any]): Unit = {
-    if (!nodes.contains(from)) nodes += from
-    if (!nodes.contains(to)) nodes += to
-    edges += Edge(from, to)
+    /** CODE TO GET TYPES **/ 
+    val fromNode = from.asInstanceOf[Node[from.IN,from.OUT]] 
+    val toNode = to.asInstanceOf[Node[to.IN,to.OUT]]  
+
+    if (!nodes.contains(from)) nodes += fromNode
+    if (!nodes.contains(to)) nodes += toNode
+    edges += Edge(fromNode, toNode)
   }
 
   def connect(leftNode: Node[Any, Any], rightNode: Node[Any, Any], mutableNode: MutableNode[A, B, C]): Unit = {
