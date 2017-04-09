@@ -2,11 +2,13 @@ package com.mlab.influx.core
 
 import org.apache.spark.streaming.dstream.DStream
 
+sealed trait Operator
+
 /**
   * A single processing node.
   * Processes an element of a stream using some function.
   */
-abstract class Node[A, B] {
+abstract class Node[A, B] extends Operator {
 
   def apply(in: A) : B
   def apply(inStream: DStream[A]) : DStream[B] = inStream.map(apply)

@@ -1,40 +1,47 @@
 package com.mlab.influx.core
 
+import scala.reflect.ClassTag
+import scala.reflect.runtime.{universe => ru}
+import scala.reflect.runtime.universe.ClassSymbol
 
 /**
   * Represents an edge from one node to another, internally to a Graph
   */
-private[core] case class Edge(from: Node[Any, Any], to: Node[Any, Any])
+private[core] case class Edge(from: Operator, to: Operator)
 
 /**
   * Graph structure ot hold all processing nodes and connections in a graph.
   */
-private[core] class Graph(nodes: Seq[Node[Any, Any]], edges: Seq[Edge],
-            defaultInput: Option[Node[Any, Any]], defaultOutput: Option[Node[Any, Any]] = None) {
+private[core] class Graph(nodes: Seq[Operator], edges: Seq[Edge], types: Map[Operator, (ClassSymbol, ClassSymbol)],
+            defaultInput: Option[Operator], defaultOutput: Option[Operator] = None) {
+
+  private def nodeTypes[A, B](node: Node[A, B]) = (ru.typeOf[A].typeSymbol.asClass, ru.typeOf[B].typeSymbol.asClass)
 
   /**
     * Connect a node to this graph. If there is a default output, this node is the new output.
     * @param node Node to add to end of graph.
     * @return Graph with node connected to the end.
     */
-  def connect(node: Node[Any, Any]): Graph = {
+  def connect[A, B](node: Node[A, B]): Graph = {
+    val (a, b) = nodeTypes(node)
     defaultOutput match {
-      case Some(output) => new Graph(nodes :+ node, edges :+ new Edge(output, node), defaultInput, Some(node))
-      case None => new Graph(nodes :+ node, edges, defaultInput, defaultOutput)
+      case Some(output) => new Graph(nodes :+ node, edges :+ new Edge(output, node),
+        types + (node -> (a, b)), defaultInput, Some(node))
+      case None => new Graph(nodes :+ node, edges, types + (node -> (a,b)), defaultInput, defaultOutput)
     }
   }
 
-  def connect(existingNode: Node[Any, Any], newNode: Node[Any, Any]): Graph = {
-    new Graph(nodes :+ newNode, edges :+ Edge(existingNode, newNode), defaultInput, defaultOutput)
+  def connect[A, B](existingNode: Operator, newNode: Node[A, B]): Graph = {
+    new Graph(nodes :+ newNode, edges :+ Edge(existingNode, newNode), types + (newNode -> nodeTypes(newNode)), defaultInput, defaultOutput)
   }
 
   /**
     * Set the default output node of the graph.
     * If node does not exist in the graph, connect it and make this the output.
     */
-  def withDefaultOutput(node: Node[Any, Any]) : Graph = {
+  def withDefaultOutput[A, B](node: Node[A, B]) : Graph = {
     if (nodes.contains(node)) {
-      new Graph(nodes, edges, defaultInput, Some(node))
+      new Graph(nodes, edges, types, defaultInput, Some(node))
     } else {
       connect(node).withDefaultOutput(node)
     }
@@ -44,9 +51,9 @@ private[core] class Graph(nodes: Seq[Node[Any, Any]], edges: Seq[Edge],
     * Set the default input of the graph.
     * If node does not exist in the graph, connect it and make it the default input.
     */
-  def withDefaultInput(node: Node[Any, Any]): Graph = {
+  def withDefaultInput[A, B](node: Node[A, B]): Graph = {
     if (nodes.contains(node)) {
-      new Graph(nodes, edges, Some(node), defaultOutput)
+      new Graph(nodes, edges, types, Some(node), defaultOutput)
     } else {
       defaultOutput match {
         case Some(output) => connect(node).removeEdge(output, node).withDefaultInput(node)
@@ -58,8 +65,8 @@ private[core] class Graph(nodes: Seq[Node[Any, Any]], edges: Seq[Edge],
   /**
     * Disconnect two nodes that are connected in the graph.
     */
-  private def removeEdge(from: Node[Any, Any], to: Node[Any, Any]): Graph = {
-    new Graph(nodes, edges.filterNot(edge => edge.from == from && edge.to == to), defaultInput, defaultOutput)
+  private def removeEdge(from: Operator, to: Operator): Graph = {
+    new Graph(nodes, edges.filterNot(edge => edge.from == from && edge.to == to), types, defaultInput, defaultOutput)
   }
 
   def compute(node: Node[Any, Any]): Any = {
