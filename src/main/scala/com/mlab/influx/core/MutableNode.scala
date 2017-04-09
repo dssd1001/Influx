@@ -5,7 +5,7 @@ import org.apache.spark.util.AccumulatorV2
   * Created by ravi on 4/4/17.
   */
 
-private class MutableNode[A, B, C] extends Node[A, B] {
+abstract class MutableNode[A, B, C] extends Node[A, B] {
   var initialState: C
 
   val state: Accumulator[C] = new Accumulator(initialState)
@@ -17,7 +17,7 @@ private class MutableNode[A, B, C] extends Node[A, B] {
 
 }
 
-private object MutableNode {
+object MutableNode {
 
   def apply[A, B, C](f: A=>B, g: C=>C, initialVal: C) : MutableNode[A,B,C] = new MutableNode[A,B,C] {
     initialState = initialVal
