@@ -1,5 +1,6 @@
 package com.mlab.influx.core
 
+import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.util.AccumulatorV2
 /**
   * Created by ravi on 4/4/17.
@@ -10,9 +11,7 @@ abstract class MutableNode[A, B, C] extends Node[A, B] {
 
   val state: Accumulator[C] = new Accumulator(initialState)
   def update(in: C) : Unit
-  def update(inStream: DStream[C]) : Unit = inStream.foreach(update)
-  def apply(in: A) : B
-  def apply(inStream: DStream[A]) : DStream[B] = inStream.map(apply)
+  def update(inStream: DStream[C]) : Unit = inStream.foreachRDD(rdd => rdd.foreach(update))
   def reset : Unit = state.reset()
 
 }
@@ -20,10 +19,11 @@ abstract class MutableNode[A, B, C] extends Node[A, B] {
 object MutableNode {
 
   def apply[A, B, C](f: A=>B, g: C=>C, initialVal: C) : MutableNode[A,B,C] = new MutableNode[A,B,C] {
-    initialState = initialVal
     override def apply(in: A): B = f(in)
     override def apply(inStream: DStream[A]) : DStream[B] = inStream.map(f)
     override def update(in: C) : Unit = state.add(g(in))
+
+    override var initialState: C = initialVal
   }
 }
 
