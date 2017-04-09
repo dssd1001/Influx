@@ -24,6 +24,10 @@ private[core] class Graph(nodes: Seq[Node[Any, Any]], edges: Seq[Edge],
     }
   }
 
+  def connect(existingNode: Node[Any, Any], newNode: Node[Any, Any]): Graph = {
+    new Graph(nodes :+ newNode, edges :+ Edge(existingNode, newNode), defaultInput, defaultOutput)
+  }
+
   /**
     * Set the default output node of the graph.
     * If node does not exist in the graph, connect it and make this the output.
@@ -56,6 +60,28 @@ private[core] class Graph(nodes: Seq[Node[Any, Any]], edges: Seq[Edge],
     */
   private def removeEdge(from: Node[Any, Any], to: Node[Any, Any]): Graph = {
     new Graph(nodes, edges.filterNot(edge => edge.from == from && edge.to == to), defaultInput, defaultOutput)
+  }
+
+  def compute(node: Node[Any, Any]): Any = {
+    val incomingNodes = edges.filter(_.to == node).map(_.from)
+    if (node.isInstanceOf[MutableNode]) {
+      assert { incomingNodes.size == 2 }
+      val leftNode = incomingNodes.head
+      val rightNode = incomingNodes(1)
+
+      val mutableNode = node.asInstanceOf[MutableNode]
+      // TODO: get the return value here
+
+    } else {
+      assert { incomingNodes.size == 1}
+      val prevNode = incomingNodes.head
+      if (prevNode.isInstanceOf[StreamNode]) {
+        val stream = prevNode.asInstanceOf[StreamNode].stream
+        node.apply(stream)
+      } else {
+        node.apply(compute(prevNode))
+      }
+    }
   }
 
 

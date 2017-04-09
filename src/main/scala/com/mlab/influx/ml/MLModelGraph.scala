@@ -12,7 +12,6 @@ class MLModelGraph[A, B, M](trainStream: DStream[(A, B)], queryStream: DStream[A
   this.addNode(trainStreamNode)
   this.addNode(queryStreamNode)
 
-
   def learn(trainData: A, trainLabels: B, oldModel: M): M
   def predict(data: A, model: M): B
 
@@ -24,6 +23,8 @@ class MLModelGraph[A, B, M](trainStream: DStream[(A, B)], queryStream: DStream[A
 
   override val input: Node[Any, Any] = _
   override val output: Node[Any, Any] = _
+
+
 
   this.hook(trainStreamNode, learner)
   this.hook(queryStreamNode, server)
