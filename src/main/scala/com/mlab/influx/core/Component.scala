@@ -26,5 +26,4 @@ abstract class Component {
     if (!nodes.contains(node))
       nodes :+ node
   }
-
 }
