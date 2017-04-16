@@ -17,8 +17,8 @@ abstract class Component {
     val fromNode = from.asInstanceOf[Node[from.IN,from.OUT]] 
     val toNode = to.asInstanceOf[Node[to.IN,to.OUT]]  
 
-    if (!nodes.contains(from)) nodes :+ from
-    if (!nodes.contains(to)) nodes :+ to
+    if (!nodes.contains(from)) nodes = nodes :+ from
+    if (!nodes.contains(to)) nodes = nodes :+ to
     edges = edges :+ Edge(from, to)
   }
 
@@ -26,5 +26,4 @@ abstract class Component {
     if (!nodes.contains(node))
       nodes = nodes :+ node
   }
-
 }
