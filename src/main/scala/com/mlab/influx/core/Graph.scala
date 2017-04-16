@@ -9,6 +9,23 @@ import scala.reflect.runtime.universe.ClassSymbol
   */
 private[core] case class Edge(from: Operator, to: Operator)
 
+private[core] class GraphFunction[A,B](f: A=>B, parentGraph: Graph, dependencies: Seq[Operator]) extends Function[A,B] {
+  var currentF = f
+  var currentDependencies = dependencies
+
+  def updateFunc(): Unit = {
+
+  }
+
+  def dependenciesHaveChanged(): Boolean = false
+
+  override def apply(in: A): B = {
+    if (dependenciesHaveChanged()) updateFunc()
+    currentF(in)
+  }
+}
+
+
 /**
   * Graph structure ot hold all processing nodes and connections in a graph.
   */
@@ -33,6 +50,24 @@ private[core] class Graph(nodes: Seq[Operator], edges: Seq[Edge], types: Map[Ope
 
   def connect[A, B](existingNode: Operator, newNode: Node[A, B]): Graph = {
     new Graph(nodes :+ newNode, edges :+ Edge(existingNode, newNode), types + (newNode -> nodeTypes(newNode)), defaultInput, defaultOutput)
+  }
+
+  private def isConnected(op1: Operator, op2: Operator): Boolean = {
+    if (!nodes.contains(op1) || !nodes.contains(op2)) return false
+    // TODO: write connectedness tests
+    true
+  }
+
+  private def getComputationPath(fromOp: Operator, toOp: Operator): Seq[Operator] = {
+    getComputationPath(fromOp, toOp, Seq())
+  }
+
+  private def getComputationPath(fromOp: Operator, toOp: Operator, path: Seq[Operator]): Seq[Operator] = {
+    val fromFanoutNodes = edges.filter(_.from == fromOp).map(_.to)
+    val toFanoutNodes = edges.filter(_.from == toOp).map(_.to)
+
+    if (fromFanoutNodes.isEmpty) return path
+    if (toFanoutNodes.isEmpty) return path
   }
 
   /**
@@ -69,27 +104,30 @@ private[core] class Graph(nodes: Seq[Operator], edges: Seq[Edge], types: Map[Ope
     new Graph(nodes, edges.filterNot(edge => edge.from == from && edge.to == to), types, defaultInput, defaultOutput)
   }
 
-  def compute(node: Node[Any, Any]): Any = {
-    val incomingNodes = edges.filter(_.to == node).map(_.from)
-    if (node.isInstanceOf[MutableNode]) {
-      assert { incomingNodes.size == 2 }
-      val leftNode = incomingNodes.head
-      val rightNode = incomingNodes(1)
-
-      val mutableNode = node.asInstanceOf[MutableNode]
-      // TODO: get the return value here
-
-    } else {
-      assert { incomingNodes.size == 1}
-      val prevNode = incomingNodes.head
-      if (prevNode.isInstanceOf[StreamNode]) {
-        val stream = prevNode.asInstanceOf[StreamNode].stream
-        node.apply(stream)
-      } else {
-        node.apply(compute(prevNode))
-      }
+  def subgraph[A, B](start: Option[Operator] = None, end: Option[Operator] = None): GraphFunction[A,B] = {
+    assert {
+      start.isDefined || defaultInput.isDefined
     }
-  }
+    assert {
+      end.isDefined || defaultOutput.isDefined
+    }
 
+    val startOp = start match {
+      case Some(s) => s
+      case None => defaultInput.get
+    }
+
+    val endOp = end match {
+      case Some(e) => e
+      case None => defaultOutput.get
+    }
+
+    assert {
+      isConnected(startOp, endOp)
+    }
+
+    val startNode = startOp.asInstanceOf[Node[startOp.IN, startOp.OUT]]
+    val endNode = startOp.asInstanceOf[Node[endOp.IN, endOp.OUT]]
+  }
 
 }

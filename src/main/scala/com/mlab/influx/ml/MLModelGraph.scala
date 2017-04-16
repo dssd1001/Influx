@@ -1,6 +1,6 @@
 package com.mlab.influx.ml
 
-import com.mlab.influx.core.{Component, Node, StreamNode}
+import com.mlab.influx.core.{Component, MutableNode, Node, StreamNode}
 import org.apache.spark.streaming.dstream.DStream
 
 
