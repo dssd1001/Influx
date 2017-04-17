@@ -1,6 +1,5 @@
 package com.mlab.influx.core
 
-import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}
 import scala.reflect.runtime.universe.ClassSymbol
 
