@@ -124,27 +124,4 @@ abstract class Structure {
     //recursive
     return curry[A, o.OUT](sequence, index + 1, nextFunc)
   }
-
-
-
-
-  /**
-    * Set the default output node of the graph.
-    * If node does not exist in the graph, throws exception.
-    */
-  def setDefaultOutput[A, B](node: Node[A, B]): Unit = {
-    if (nodes.contains(node)) {
-      defaultOutput = Some(node)
-    }
-  }
-
-  /**
-    * Set the default input of the graph.
-    * If node does not exist in the graph, throws exception.
-    */
-  def setDefaultInput[A, B](node: Node[A, B]): Unit = {
-    if (nodes.contains(node)) {
-      defaultInput = Some(node)
-    }
-  }
 }
