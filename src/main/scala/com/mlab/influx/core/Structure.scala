@@ -25,7 +25,7 @@ abstract class Structure {
     var currOp = op2
 
     while (!currOp.equals(op1)) {
-      val op = currOp
+//      val op = currOp
 //      //add to list
 //      var currNode = currOp.asInstanceOf[Node[op.IN,op.OUT]]
       //get an edge to, traversing backwards
