@@ -5,12 +5,12 @@ import scala.collection.mutable.ArrayBuffer
 /**
   * Created by noahg on 4/4/2017.
   */
-abstract class Component {
-  private var nodes: Seq[Operator] = ArrayBuffer.empty[Operator]
-  private var edges: Seq[Edge] = ArrayBuffer.empty[Edge]
-
-  val input: Operator
-  val output: Operator
+abstract class Component extends Structure{
+//  private var nodes: Seq[Operator] = ArrayBuffer.empty[Operator]
+//  private var edges: Seq[Edge] = ArrayBuffer.empty[Edge]
+//
+//  val input: Operator
+//  val output: Operator
 
   def hook(from: Operator, to: Operator): Unit = {
     /** CODE TO GET TYPES **/ 
