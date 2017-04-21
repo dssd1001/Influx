@@ -1,6 +1,7 @@
 package com.mlab.influx.core
 
 import scala.collection.mutable.ArrayBuffer
+import scala.reflect.ClassTag
 
 /**
   * Created by suneelbelkhale1 on 4/16/17.
@@ -52,7 +53,7 @@ abstract class Structure {
     * @tparam B type of output of end
     * @return Node that is the composed function
     */
-  def extractFunction[A, B](start: Option[Operator] = None, end: Option[Operator] = None): Node[A,B] = {
+  def extractFunction[A, B: ClassTag](start: Option[Operator] = None, end: Option[Operator] = None): Node[A,B] = {
     assert {
       start.isDefined || defaultInput.isDefined
     }
@@ -78,6 +79,8 @@ abstract class Structure {
     var currOp = endOp
     var list = List(endOp)
 
+    val exceptionNode = Node[Int, Int](x => x)
+
     while (!currOp.equals(startOp)) {
       val op = currOp
       //add to list
@@ -85,8 +88,11 @@ abstract class Structure {
       //get an edge to, traversing backwards
       var next: Edge = edges.find((e: Edge) => e.to.equals(currOp)) match {
         case Some(edge) => edge
-        case None => throw Exception
+        case None => new Edge(exceptionNode, exceptionNode)
       }
+
+      // if (next.from == exceptionNode) return
+
       //iterating through the edge list
       currOp = next.from
       //

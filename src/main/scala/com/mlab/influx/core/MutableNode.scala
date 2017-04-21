@@ -2,11 +2,13 @@ package com.mlab.influx.core
 
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.util.AccumulatorV2
+
+import scala.reflect.ClassTag
 /**
   * Created by ravi on 4/4/17.
   */
 
-abstract class MutableNode[A, B, C] extends Node[A, B] {
+abstract class MutableNode[A, B: ClassTag, C] extends Node[A, B] {
   var initialState: C
 
   val state: Accumulator[C] = new Accumulator(initialState)
@@ -18,7 +20,7 @@ abstract class MutableNode[A, B, C] extends Node[A, B] {
 
 object MutableNode {
 
-  def apply[A, B, C](f: A=>B, g: C=>C, initialVal: C) : MutableNode[A,B,C] = new MutableNode[A,B,C] {
+  def apply[A, B: ClassTag, C](f: A=>B, g: C=>C, initialVal: C) : MutableNode[A,B,C] = new MutableNode[A,B,C] {
     override def apply(in: A): B = f(in)
     override def apply(inStream: DStream[A]) : DStream[B] = inStream.map(f)
     override def update(in: C) : Unit = state.add(g(in))
@@ -27,7 +29,7 @@ object MutableNode {
   }
 }
 
-private class Accumulator[C](initialState: C) extends AccumulatorV2[C, C] {
+class Accumulator[C](initialState: C) extends AccumulatorV2[C, C] {
   private var state: C = initialState
 
   def reset(): Unit = { state = initialState}

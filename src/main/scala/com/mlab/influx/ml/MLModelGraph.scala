@@ -3,8 +3,10 @@ package com.mlab.influx.ml
 import com.mlab.influx.core._
 import org.apache.spark.streaming.dstream.DStream
 
+import scala.reflect.ClassTag
 
-abstract class MLModelGraph[A, B, M](trainStream: DStream[(A, B)], queryStream: DStream[A]) extends Component {
+
+abstract class MLModelGraph[A, B: ClassTag, M](trainStream: DStream[(A, B)], queryStream: DStream[A]) extends Component {
 
   val trainStreamNode = new StreamNode(trainStream)
   val queryStreamNode = new StreamNode(queryStream)

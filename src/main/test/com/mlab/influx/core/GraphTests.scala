@@ -1,22 +1,23 @@
 package com.mlab.influx.core
 
+import org.apache.spark.SparkContext
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
 /**
   * Created by noahg on 4/20/2017.
   */
-class Graph extends FunSuite with BeforeAndAfter {
+class GraphTests extends FunSuite with BeforeAndAfter {
 
-  var g:Graph = _
-  vasr sc: SparkContext = _
+  var g:GraphTests = _
+  var sc: SparkContext = _
 
 
   before {
     val conf = new SparkConf().setAppName("Node tests").setMaster("localhost")
     sc = new SparkContext(conf)
-    var n : Node = Node((x:Int)=>x+1)
-    g = new Graph(new List(n), new List(), new Map(n, (Int, Int)))
+    var n = Node((x:Int)=>x+1)
+    g = new GraphTests(new List(n), new List(), new Map(n, (Int, Int)))
   }
 
   test("extract function works properly") {
