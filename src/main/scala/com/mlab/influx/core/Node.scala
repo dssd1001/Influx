@@ -13,7 +13,7 @@ sealed trait Operator {
   * A single processing node.
   * Processes an element of a stream using some function.
   */
-abstract class Node[A, B: ClassTag] extends Operator {
+abstract class Node[A, B: ClassTag] extends Operator with java.io.Serializable {
   override type IN = A
   override type OUT = B
 

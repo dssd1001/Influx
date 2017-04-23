@@ -6,7 +6,7 @@ import scala.reflect.ClassTag
 /**
   * Created by suneelbelkhale1 on 4/16/17.
   */
-abstract class Structure {
+abstract class Structure extends java.io.Serializable{
   protected var nodes: Seq[Operator] = ArrayBuffer.empty[Operator]
   protected var edges: Seq[Edge] = ArrayBuffer.empty[Edge]
   protected var defaultInput: Option[Operator] = None
