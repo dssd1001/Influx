@@ -1,6 +1,6 @@
 package com.mlab.influx.core
 
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
 /**
@@ -16,7 +16,7 @@ class ComponentTests extends FunSuite with BeforeAndAfter {
   }
 
   test("Component does math") {
-    assert(math.extractFunction.apply(1) == 3)
+    assert(math.extractFunction().apply(1) == 3)
   }
 
   after {
@@ -25,8 +25,8 @@ class ComponentTests extends FunSuite with BeforeAndAfter {
 }
 
 class MathComponent extends Component {
-  val multNode : Node(x => x * 2)
-  val addNode : Node(x => x + 1)
+  val multNode : Node[Int, Int] = Node(x => x * 2)
+  val addNode : Node[Int, Int] = Node(x => x + 1)
 
   this.hook(multNode, addNode)
   this.setDefaultInput(multNode)
