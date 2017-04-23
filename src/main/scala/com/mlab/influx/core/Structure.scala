@@ -18,7 +18,7 @@ abstract class Structure {
     * @param op2
     * @return
     */
-  private def isConnected(op1: Operator, op2: Operator): Boolean = {
+  def isConnected(op1: Operator, op2: Operator): Boolean = {
     if (!nodes.contains(op1) || !nodes.contains(op2)) return false
 
     // TODO: TEST THIS -> connectedness tests
