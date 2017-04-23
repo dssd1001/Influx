@@ -30,7 +30,7 @@ class Graph(nodesSeq: Seq[Operator], edgesSeq: Seq[Edge],
     * @return Graph with node connected to the end.
     */
   def connect[A, B](node: Node[A, B]): Graph = {
-    val (a, b) = nodeTypes(node)
+    //val (a, b) = nodeTypes(node)
     defaultOutput match {
       case Some(output) => new Graph(nodes :+ node, edges :+ new Edge(output, node),
         defaultInput, Some(node))
@@ -67,6 +67,14 @@ class Graph(nodesSeq: Seq[Operator], edgesSeq: Seq[Edge],
         case None => connect(node).withDefaultInput(node)
       }
     }
+  }
+
+  def numberOfNodes:Int = {
+    nodes.size
+  }
+
+  def numberOfEdges:Int = {
+    edges.size
   }
 
   /**
