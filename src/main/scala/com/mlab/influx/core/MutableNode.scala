@@ -13,7 +13,7 @@ abstract class MutableNode[A, B: ClassTag, C] extends Node[A, B] {
 
   val state: Accumulator[C] = new Accumulator(initialState)
   def update(in: C) : Unit
-  def update(inStream: DStream[C]) : Unit = inStream.foreachRDD(rdd => rdd.foreach(update))
+  def update(inStream: DStream[C]) : Unit = inStream.foreachRDD { rdd => rdd.foreach(update) }
   def reset : Unit = state.reset()
 
 }
@@ -35,9 +35,9 @@ class Accumulator[C](initialState: C) extends AccumulatorV2[C, C] {
   def reset(): Unit = { state = initialState}
   def add(in: C): Unit = {state = in }
 
-  override def isZero: Boolean = false
-
   override def copy(): AccumulatorV2[C, C] = new Accumulator(state)
+
+  override def isZero(): Boolean = this.value == initialState
 
   override def merge(other: AccumulatorV2[C, C]): Unit = { state = other.value }
 
