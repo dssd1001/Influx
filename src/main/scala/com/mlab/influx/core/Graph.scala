@@ -14,7 +14,7 @@ private[core] case class Edge(from: Operator, to: Operator)
 /**
   * Graph structure ot hold all processing nodes and connections in a graph.
   */
-private[core] class Graph(nodesSeq: Seq[Operator], edgesSeq: Seq[Edge], types: Map[Operator, (ClassSymbol, ClassSymbol)],
+class Graph(nodesSeq: Seq[Operator], edgesSeq: Seq[Edge],
             defaultIn: Option[Operator], defaultOut: Option[Operator] = None) extends Structure {
 
   nodes = nodesSeq
@@ -33,13 +33,13 @@ private[core] class Graph(nodesSeq: Seq[Operator], edgesSeq: Seq[Edge], types: M
     val (a, b) = nodeTypes(node)
     defaultOutput match {
       case Some(output) => new Graph(nodes :+ node, edges :+ new Edge(output, node),
-        types + (node -> (a, b)), defaultInput, Some(node))
-      case None => new Graph(nodes :+ node, edges, types + (node -> (a,b)), defaultInput, defaultOutput)
+        defaultInput, Some(node))
+      case None => new Graph(nodes :+ node, edges, defaultInput, defaultOutput)
     }
   }
 
   def connect[A, B](existingNode: Operator, newNode: Node[A, B]): Graph = {
-    new Graph(nodes :+ newNode, edges :+ Edge(existingNode, newNode), types + (newNode -> nodeTypes(newNode)), defaultInput, defaultOutput)
+    new Graph(nodes :+ newNode, edges :+ Edge(existingNode, newNode), defaultInput, defaultOutput)
   }
 
   /**
@@ -48,7 +48,7 @@ private[core] class Graph(nodesSeq: Seq[Operator], edgesSeq: Seq[Edge], types: M
     */
   def withDefaultOutput[A, B](node: Node[A, B]) : Graph = {
     if (nodes.contains(node)) {
-      new Graph(nodes, edges, types, defaultInput, Some(node))
+      new Graph(nodes, edges, defaultInput, Some(node))
     } else {
       connect(node).withDefaultOutput(node)
     }
@@ -60,7 +60,7 @@ private[core] class Graph(nodesSeq: Seq[Operator], edgesSeq: Seq[Edge], types: M
     */
   def withDefaultInput[A, B](node: Node[A, B]): Graph = {
     if (nodes.contains(node)) {
-      new Graph(nodes, edges, types, Some(node), defaultOutput)
+      new Graph(nodes, edges, Some(node), defaultOutput)
     } else {
       defaultOutput match {
         case Some(output) => connect(node).removeEdge(output, node).withDefaultInput(node)
@@ -73,7 +73,7 @@ private[core] class Graph(nodesSeq: Seq[Operator], edgesSeq: Seq[Edge], types: M
     * Disconnect two nodes that are connected in the graph.
     */
   private def removeEdge(from: Operator, to: Operator): Graph = {
-    new Graph(nodes, edges.filterNot(edge => edge.from == from && edge.to == to), types, defaultInput, defaultOutput)
+    new Graph(nodes, edges.filterNot(edge => edge.from == from && edge.to == to), defaultInput, defaultOutput)
   }
 
 }
