@@ -15,7 +15,7 @@ private[core] case class Edge(from: Operator, to: Operator)
   * Graph structure ot hold all processing nodes and connections in a graph.
   */
 class Graph(nodesSeq: Seq[Operator], edgesSeq: Seq[Edge],
-            defaultIn: Option[Operator], defaultOut: Option[Operator] = None) extends Structure {
+            defaultIn: Option[Operator] = None, defaultOut: Option[Operator] = None) extends Structure {
 
   nodes = nodesSeq
   edges = edgesSeq
@@ -76,4 +76,9 @@ class Graph(nodesSeq: Seq[Operator], edgesSeq: Seq[Edge],
     new Graph(nodes, edges.filterNot(edge => edge.from == from && edge.to == to), defaultInput, defaultOutput)
   }
 
+}
+
+object Graph {
+  def empty(): Graph = new Graph(Seq(), Seq())
+  def connect[A, B](node: Node[A,B]): Graph = empty().connect(node)
 }
