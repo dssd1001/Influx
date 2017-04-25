@@ -20,9 +20,9 @@ abstract class MutableNode[A, B: ClassTag, C] extends Node[A, B] {
 
 object MutableNode {
 
-  def apply[A, B: ClassTag, C](f: A=>B, g: C=>C, initialVal: C) : MutableNode[A,B,C] = new MutableNode[A,B,C] {
-    override def apply(in: A): B = f(in)
-    override def apply(inStream: DStream[A]) : DStream[B] = inStream.map(f)
+  def apply[A, B: ClassTag, C](f: (A,C)=>B, g: C=>C, initialVal: C) : MutableNode[A,B,C] = new MutableNode[A,B,C] {
+    override def apply(in: A): B = f(in,state.value)
+    override def apply(inStream: DStream[A]) : DStream[B] = inStream.map(x=>f(x,state.value))
     override def update(in: C) : Unit = state.add(g(in))
 
     override var initialState: C = initialVal

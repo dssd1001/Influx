@@ -29,11 +29,13 @@ class NodeTests extends FunSuite with BeforeAndAfter {
     val rdd2 = sc.parallelize(List(4, 5, 6))
     val ssc = new StreamingContext(sc, Seconds(1))
     val stream = ssc.queueStream[Int](mutable.Queue(rdd1, rdd2))
-
     val resultStream = singleElemAddNode.apply(stream).foreachRDD(rdd => {
       val vals = rdd.collect().toSeq
       assert(vals == List(2,3,4).toSeq || vals == List(5,6,7).toSeq)
     })
+
+    ssc.start()
+    Thread.sleep(2000)
 
   }
   after {
