@@ -74,8 +74,37 @@ class GraphTests extends FunSuite with BeforeAndAfter {
     val resultNode:Node[Int,Int] = g.extractFunction(Some(n), Some(n2))
     val resultStream = resultNode.apply(stream).foreachRDD(rdd=> {
       val vals = rdd.collect().toSeq
+      println("hello world")
       assert(vals==List(4,5,6) || vals==List(7,8,9))
     })
+
+  }
+
+  test("Testing graph with mutable node") {
+    var node1 : MutableNode[Int,Int,Int] = MutableNode((x:Int,y:Int)=>x+y, (x:Int)=>x, 0)
+    g = g.withDefaultInput(n)
+    g = g.withDefaultOutput(n)
+    g = g.connect(node1)
+    val rdd1 = sc.parallelize(List(1, 2, 3))
+    val rdd2 = sc.parallelize(List(4, 5, 6))
+    val rdd3 = sc.parallelize(List(0, 0))
+    val ssc = new StreamingContext(sc, Seconds(1))
+    sc.register(node1.state)
+    val applyStream = ssc.queueStream[Int](mutable.Queue(rdd1,rdd3))
+    val updateStream = ssc.queueStream[Int](mutable.Queue(rdd2))
+
+    node1.update(updateStream)
+    val resultNode:Node[Int,Int] = g.extractFunction()
+
+
+    val resultStream = resultNode.apply(applyStream).foreachRDD(rdd=>{
+      val vals = rdd.collect().toSeq
+      assert(vals==List(8,9,10) || vals==List(7,7))
+    })
+
+    ssc.start()
+    Thread.sleep(2000)
+
   }
 
   after {
