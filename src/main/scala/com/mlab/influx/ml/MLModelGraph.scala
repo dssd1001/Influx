@@ -6,12 +6,12 @@ import org.apache.spark.streaming.dstream.DStream
 import scala.reflect.ClassTag
 
 
-abstract class MLModelGraph[A, B: ClassTag, M](trainStream: DStream[(A, B)], queryStream: DStream[A]) extends Component {
+abstract class MLModelGraph[A: ClassTag, B: ClassTag, M: ClassTag](trainStream: DStream[(A, B)], queryStream: DStream[A], initialModel: M) extends Component {
 
   val trainStreamNode = new StreamNode(trainStream)
   val queryStreamNode = new StreamNode(queryStream)
 
-  val initialModel: M
+
 
   this.addNode(trainStreamNode)
   this.addNode(queryStreamNode)
@@ -26,7 +26,7 @@ abstract class MLModelGraph[A, B: ClassTag, M](trainStream: DStream[(A, B)], que
   val server = new MutableNode[A, B, M] {
     override def apply(in: A): B = predict(in, state.value)
     override def update(in: M): Unit = state.add(in)
-    override def initialState = initialModel
+    override var initialState = initialModel
   }
 
   this.hook(trainStreamNode, learner)
